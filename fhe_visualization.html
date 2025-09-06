@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FHE Golden Ratio Demo</title>
+    <title>FHE Interactive Demo</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -26,6 +26,51 @@
             font-size: 2.5em;
             margin-bottom: 30px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .input-section {
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .input-group {
+            margin: 15px 0;
+        }
+        .input-group label {
+            display: block;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .input-group input {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            width: 200px;
+            text-align: center;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .input-group input:focus {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+        .operation-selector {
+            margin: 20px 0;
+        }
+        .operation-selector select {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            outline: none;
+            cursor: pointer;
         }
         .step {
             margin: 20px 0;
@@ -57,6 +102,7 @@
             border-radius: 8px;
             font-family: 'Courier New', monospace;
             font-weight: bold;
+            transition: all 0.3s ease;
         }
         .clear-data {
             background: rgba(76, 175, 80, 0.8);
@@ -77,6 +123,14 @@
             50% { opacity: 1; }
             100% { opacity: 0.7; }
         }
+        @keyframes calculate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2) rotate(5deg); }
+            100% { transform: scale(1); }
+        }
+        .calculating {
+            animation: calculate 0.5s infinite;
+        }
         .math-formula {
             text-align: center;
             font-size: 1.5em;
@@ -85,21 +139,6 @@
             background: rgba(0,0,0,0.3);
             border-radius: 8px;
             font-family: 'Times New Roman', serif;
-        }
-        .key-box {
-            display: inline-block;
-            padding: 10px 15px;
-            background: rgba(156, 39, 176, 0.8);
-            border: 2px solid #9C27B0;
-            border-radius: 8px;
-            margin: 5px;
-            font-weight: bold;
-        }
-        .process-arrow {
-            text-align: center;
-            font-size: 2em;
-            margin: 10px 0;
-            color: #ffd700;
         }
         .demo-button {
             background: #ffd700;
@@ -118,172 +157,322 @@
             background: #ffed4a;
             transform: scale(1.05);
         }
+        .demo-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
         .result-section {
             background: rgba(0,0,0,0.3);
             border-radius: 10px;
             padding: 20px;
             margin-top: 20px;
+            display: none;
         }
-        .precision-demo {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 15px;
+        .show-result {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .process-arrow {
+            text-align: center;
+            font-size: 2em;
+            margin: 10px 0;
+            color: #ffd700;
+        }
+        .encryption-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
             margin: 20px 0;
         }
-        .precision-box {
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffed4a);
+            width: 0%;
+            transition: width 0.3s ease;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔐 Fully Homomorphic Encryption Demo</h1>
-        <p style="text-align: center; font-size: 1.2em;">Tính tỷ lệ vàng trên dữ liệu mã hóa</p>
-
-        <div class="step">
-            <span class="step-number">1</span>
-            <strong>Tạo khóa mã hóa:</strong>
-            <div style="margin-top: 10px;">
-                <div class="key-box">🔑 Client Key (ckey)</div>
-                <div class="key-box">🔑 Server Key (skey)</div>
-            </div>
-            <p><em>Client key để mã hóa/giải mã, Server key để tính toán</em></p>
-        </div>
-
-        <div class="step">
-            <span class="step-number">2</span>
-            <strong>Dữ liệu ban đầu (rõ):</strong>
-            <div style="margin-top: 10px;">
-                <div class="data-box clear-data">1</div>
-                <div class="data-box clear-data">5</div>
-            </div>
-        </div>
-
-        <div class="process-arrow">⬇️ MÃ HÓA ⬇️</div>
-
-        <div class="step">
-            <span class="step-number">3</span>
-            <strong>Dữ liệu sau khi mã hóa:</strong>
-            <div style="margin-top: 10px;">
-                <div class="data-box encrypted-data">🔒 E(1)</div>
-                <div class="data-box encrypted-data">🔒 E(5)</div>
-            </div>
-            <p><em>Dữ liệu giờ đây hoàn toàn bị che giấu!</em></p>
-        </div>
-
-        <div class="step">
-            <span class="step-number">4</span>
-            <strong>Tính toán trên dữ liệu mã hóa:</strong>
-            <div class="math-formula">φ = (1 + √5) / 2</div>
+        <h1>🔐 FHE Interactive Calculator</h1>
+        
+        <div class="input-section">
+            <h2>📝 Nhập dữ liệu của bạn</h2>
             
-            <div style="margin: 15px 0;">
-                <p><strong>Bước 4a:</strong> Tính √5 trên dữ liệu mã hóa</p>
-                <div class="data-box encrypted-data">🔒 E(√5)</div> = sqrt(<div class="data-box encrypted-data">🔒 E(5)</div>)
+            <div class="input-group">
+                <label for="input1">Số thứ nhất:</label>
+                <input type="number" id="input1" value="1" min="0" max="15" step="0.1" placeholder="0-15">
+            </div>
+            
+            <div class="input-group">
+                <label for="input2">Số thứ hai:</label>
+                <input type="number" id="input2" value="5" min="0" max="15" step="0.1" placeholder="0-15">
+            </div>
+            
+            <div class="operation-selector">
+                <label for="operation">Chọn phép tính:</label>
+                <select id="operation">
+                    <option value="golden_ratio">Tỷ lệ vàng: (a + √b) / 2</option>
+                    <option value="add">Cộng: a + b</option>
+                    <option value="multiply">Nhân: a × b</option>
+                    <option value="sqrt_add">√a + √b</option>
+                    <option value="reciprocal">1/a + 1/b</option>
+                </select>
             </div>
 
-            <div style="margin: 15px 0;">
-                <p><strong>Bước 4b:</strong> Tính 1 + √5</p>
-                <div class="data-box encrypted-data">🔒 E(1+√5)</div> = <div class="data-box encrypted-data">🔒 E(1)</div> + <div class="data-box encrypted-data">🔒 E(√5)</div>
-            </div>
-
-            <div style="margin: 15px 0;">
-                <p><strong>Bước 4c:</strong> Chia cho 2</p>
-                <div class="data-box encrypted-data">🔒 E(φ)</div> = <div class="data-box encrypted-data">🔒 E(1+√5)</div> × <div class="data-box encrypted-data">🔒 E(1/2)</div>
-            </div>
+            <button class="demo-button" onclick="startFHECalculation()">🚀 Bắt đầu tính toán FHE</button>
         </div>
 
-        <button class="demo-button" onclick="simulateCalculation()">🎯 Mô phỏng tính toán</button>
-
-        <div class="process-arrow">⬇️ GIẢI MÃ ⬇️</div>
-
-        <div class="step result-section">
-            <span class="step-number">5</span>
-            <strong>Kết quả cuối cùng:</strong>
-            
-            <div class="precision-demo">
-                <div class="precision-box">
-                    <h3>🎯 Chính xác cao (12 bit)</h3>
-                    <div class="data-box result-data" id="precise-result">1.6180</div>
-                    <p><small>U4F12: 4 bit nguyên + 12 bit thập phân</small></p>
+        <div id="calculation-steps" style="display: none;">
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>Dữ liệu gốc (rõ ràng):</strong>
+                <div class="encryption-visual">
+                    <div class="data-box clear-data" id="clear-val1">a</div>
+                    <div class="data-box clear-data" id="clear-val2">b</div>
                 </div>
+            </div>
 
-                <div class="precision-box">
-                    <h3>✂️ Cắt ngắn (4 bit)</h3>
-                    <div class="data-box result-data" id="truncated-result">1.6</div>
-                    <p><small>Chỉ giữ lại 4 bit thập phân quan trọng nhất</small></p>
-                </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress"></div>
+            </div>
 
-                <div class="precision-box">
-                    <h3>🔄 Làm tròn</h3>
-                    <div class="data-box result-data" id="rounded-result">2</div>
-                    <p><small>Làm tròn về số nguyên gần nhất</small></p>
+            <div class="process-arrow" id="encrypt-arrow" style="display: none;">⬇️ MÃ HÓA ⬇️</div>
+
+            <div class="step" id="encrypt-step" style="display: none;">
+                <span class="step-number">2</span>
+                <strong>Sau khi mã hóa:</strong>
+                <div class="encryption-visual">
+                    <div class="data-box encrypted-data" id="encrypted-val1">🔒 E(a)</div>
+                    <div class="data-box encrypted-data" id="encrypted-val2">🔒 E(b)</div>
                 </div>
+                <p><em>Dữ liệu hiện đã được bảo mật hoàn toàn!</em></p>
+            </div>
+
+            <div class="process-arrow" id="calc-arrow" style="display: none;">⬇️ TÍNH TOÁN ⬇️</div>
+
+            <div class="step" id="calc-step" style="display: none;">
+                <span class="step-number">3</span>
+                <strong>Tính toán trên dữ liệu mã hóa:</strong>
+                <div class="math-formula" id="formula">Phép tính sẽ hiển thị ở đây</div>
+                <div class="encryption-visual">
+                    <div class="data-box encrypted-data calculating" id="calc-result">🔒 E(kết quả)</div>
+                </div>
+                <p><em>Server thực hiện tính toán mà không biết giá trị thực!</em></p>
+            </div>
+
+            <div class="process-arrow" id="decrypt-arrow" style="display: none;">⬇️ GIẢI MÃ ⬇️</div>
+
+            <div class="result-section" id="result-section">
+                <span class="step-number">4</span>
+                <strong>Kết quả cuối cùng:</strong>
+                <div class="encryption-visual">
+                    <div class="data-box result-data" id="final-result">Kết quả</div>
+                </div>
+                <div id="result-explanation"></div>
             </div>
         </div>
 
         <div class="step" style="background: rgba(0,255,0,0.1); border-left-color: #00ff00;">
             <span class="step-number">💡</span>
-            <strong>Điểm quan trọng:</strong>
+            <strong>Lưu ý về U4F12:</strong>
             <ul>
-                <li>Toàn bộ phép tính được thực hiện trên dữ liệu MÃ HÓA</li>
-                <li>Server không bao giờ biết giá trị thực của dữ liệu</li>
-                <li>Chỉ khi cần kết quả, chúng ta mới giải mã</li>
-                <li>Đây là cơ sở cho điện toán đám mây an toàn</li>
+                <li><strong>Giới hạn:</strong> 0 ≤ giá trị < 16 (4 bit nguyên)</li>
+                <li><strong>Độ chính xác:</strong> 1/4096 ≈ 0.0002 (12 bit thập phân)</li>
+                <li><strong>Ví dụ:</strong> 1.5 → 1.4998, 15.9 → 15.8999</li>
             </ul>
-        </div>
-
-        <div style="text-align: center; margin-top: 30px; font-size: 0.9em; opacity: 0.7;">
-            <p>Tỷ lệ vàng thực tế: φ ≈ 1.618033988749...</p>
         </div>
     </div>
 
     <script>
-        function simulateCalculation() {
-            const button = document.querySelector('.demo-button');
-            button.innerHTML = '⚙️ Đang tính toán...';
-            button.style.background = '#ff6b35';
+        let calculationInProgress = false;
+
+        function startFHECalculation() {
+            if (calculationInProgress) return;
             
-            // Animate encrypted data boxes
-            const encryptedBoxes = document.querySelectorAll('.encrypted-data');
-            encryptedBoxes.forEach(box => {
-                box.style.animation = 'pulse 0.5s infinite';
-            });
-
-            setTimeout(() => {
-                // Show results with animation
-                document.getElementById('precise-result').innerHTML = '1.6180';
-                document.getElementById('truncated-result').innerHTML = '1.6';
-                document.getElementById('rounded-result').innerHTML = '2';
-                
-                // Reset button
-                button.innerHTML = '✅ Tính toán hoàn thành!';
-                button.style.background = '#4CAF50';
-                
-                // Reset animation
-                encryptedBoxes.forEach(box => {
-                    box.style.animation = 'pulse 2s infinite';
-                });
-
-                setTimeout(() => {
-                    button.innerHTML = '🎯 Mô phỏng tính toán';
-                    button.style.background = '#ffd700';
-                }, 2000);
-            }, 3000);
+            const input1 = parseFloat(document.getElementById('input1').value);
+            const input2 = parseFloat(document.getElementById('input2').value);
+            const operation = document.getElementById('operation').value;
+            
+            // Validate inputs
+            if (isNaN(input1) || isNaN(input2) || input1 < 0 || input1 >= 16 || input2 < 0 || input2 >= 16) {
+                alert('Vui lòng nhập số từ 0 đến 15.9 (giới hạn của U4F12)');
+                return;
+            }
+            
+            calculationInProgress = true;
+            document.querySelector('.demo-button').disabled = true;
+            document.querySelector('.demo-button').innerHTML = '⚙️ Đang xử lý...';
+            
+            // Show calculation steps
+            document.getElementById('calculation-steps').style.display = 'block';
+            
+            // Update clear values
+            document.getElementById('clear-val1').innerHTML = input1.toFixed(2);
+            document.getElementById('clear-val2').innerHTML = input2.toFixed(2);
+            
+            // Simulate step-by-step process
+            simulateSteps(input1, input2, operation);
         }
 
-        // Add some interactive effects
-        document.querySelectorAll('.data-box').forEach(box => {
-            box.addEventListener('mouseover', function() {
-                this.style.transform = 'scale(1.1)';
-            });
+        function simulateSteps(input1, input2, operation) {
+            let step = 0;
+            const totalSteps = 4;
             
-            box.addEventListener('mouseout', function() {
-                this.style.transform = 'scale(1)';
-            });
-        });
+            const interval = setInterval(() => {
+                step++;
+                updateProgress(step / totalSteps * 100);
+                
+                switch(step) {
+                    case 1:
+                        // Show encryption
+                        document.getElementById('encrypt-arrow').style.display = 'block';
+                        setTimeout(() => {
+                            document.getElementById('encrypt-step').style.display = 'block';
+                            document.getElementById('encrypted-val1').innerHTML = `🔒 E(${input1.toFixed(2)})`;
+                            document.getElementById('encrypted-val2').innerHTML = `🔒 E(${input2.toFixed(2)})`;
+                        }, 500);
+                        break;
+                        
+                    case 2:
+                        // Show calculation
+                        document.getElementById('calc-arrow').style.display = 'block';
+                        setTimeout(() => {
+                            document.getElementById('calc-step').style.display = 'block';
+                            updateFormula(operation, input1, input2);
+                        }, 500);
+                        break;
+                        
+                    case 3:
+                        // Show decryption
+                        document.getElementById('decrypt-arrow').style.display = 'block';
+                        setTimeout(() => {
+                            document.getElementById('result-section').classList.add('show-result');
+                            const result = calculateResult(operation, input1, input2);
+                            document.getElementById('final-result').innerHTML = result.toFixed(4);
+                            showResultExplanation(operation, input1, input2, result);
+                        }, 500);
+                        break;
+                        
+                    case 4:
+                        // Complete
+                        clearInterval(interval);
+                        calculationInProgress = false;
+                        document.querySelector('.demo-button').disabled = false;
+                        document.querySelector('.demo-button').innerHTML = '🎯 Tính toán mới';
+                        break;
+                }
+            }, 1500);
+        }
+
+        function updateProgress(percent) {
+            document.getElementById('progress').style.width = percent + '%';
+        }
+
+        function updateFormula(operation, a, b) {
+            const formulaElement = document.getElementById('formula');
+            let formula = '';
+            
+            switch(operation) {
+                case 'golden_ratio':
+                    formula = `φ = (${a.toFixed(2)} + √${b.toFixed(2)}) / 2`;
+                    break;
+                case 'add':
+                    formula = `${a.toFixed(2)} + ${b.toFixed(2)}`;
+                    break;
+                case 'multiply':
+                    formula = `${a.toFixed(2)} × ${b.toFixed(2)}`;
+                    break;
+                case 'sqrt_add':
+                    formula = `√${a.toFixed(2)} + √${b.toFixed(2)}`;
+                    break;
+                case 'reciprocal':
+                    formula = `1/${a.toFixed(2)} + 1/${b.toFixed(2)}`;
+                    break;
+            }
+            
+            formulaElement.innerHTML = formula;
+        }
+
+        function calculateResult(operation, a, b) {
+            switch(operation) {
+                case 'golden_ratio':
+                    return (a + Math.sqrt(b)) / 2;
+                case 'add':
+                    return a + b;
+                case 'multiply':
+                    return a * b;
+                case 'sqrt_add':
+                    return Math.sqrt(a) + Math.sqrt(b);
+                case 'reciprocal':
+                    return (1/a) + (1/b);
+                default:
+                    return 0;
+            }
+        }
+
+        function showResultExplanation(operation, a, b, result) {
+            const explanationElement = document.getElementById('result-explanation');
+            let explanation = '';
+            
+            switch(operation) {
+                case 'golden_ratio':
+                    explanation = `<p><strong>Giải thích:</strong> Tỷ lệ vàng được tính bằng công thức φ = (a + √b) / 2</p>
+                                 <p>Với a=${a}, b=${b}: φ = (${a} + ${Math.sqrt(b).toFixed(4)}) / 2 = ${result.toFixed(4)}</p>`;
+                    if (a === 1 && b === 5) {
+                        explanation += `<p><em>🎯 Đây chính là tỷ lệ vàng cổ điển! φ ≈ 1.618</em></p>`;
+                    }
+                    break;
+                case 'add':
+                    explanation = `<p><strong>Phép cộng FHE:</strong> ${a} + ${b} = ${result}</p>`;
+                    break;
+                case 'multiply':
+                    explanation = `<p><strong>Phép nhân FHE:</strong> ${a} × ${b} = ${result.toFixed(4)}</p>`;
+                    break;
+                case 'sqrt_add':
+                    explanation = `<p><strong>Căn bậc hai FHE:</strong> √${a} + √${b} = ${Math.sqrt(a).toFixed(4)} + ${Math.sqrt(b).toFixed(4)} = ${result.toFixed(4)}</p>`;
+                    break;
+                case 'reciprocal':
+                    explanation = `<p><strong>Nghịch đảo FHE:</strong> 1/${a} + 1/${b} = ${(1/a).toFixed(4)} + ${(1/b).toFixed(4)} = ${result.toFixed(4)}</p>`;
+                    break;
+            }
+            
+            explanationElement.innerHTML = explanation;
+        }
+
+        // Reset function
+        function resetDemo() {
+            document.getElementById('calculation-steps').style.display = 'none';
+            document.getElementById('result-section').classList.remove('show-result');
+            document.getElementById('progress').style.width = '0%';
+            
+            // Hide all arrows and steps
+            document.getElementById('encrypt-arrow').style.display = 'none';
+            document.getElementById('encrypt-step').style.display = 'none';
+            document.getElementById('calc-arrow').style.display = 'none';
+            document.getElementById('calc-step').style.display = 'none';
+            document.getElementById('decrypt-arrow').style.display = 'none';
+        }
+
+        // Auto-reset when inputs change
+        document.getElementById('input1').addEventListener('input', resetDemo);
+        document.getElementById('input2').addEventListener('input', resetDemo);
+        document.getElementById('operation').addEventListener('change', resetDemo);
     </script>
 </body>
 </html>
