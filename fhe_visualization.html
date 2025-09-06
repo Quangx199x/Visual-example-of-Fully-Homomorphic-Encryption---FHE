@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FHE Golden Ratio Demo</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .step {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            border-left: 5px solid #ffd700;
+            transition: transform 0.3s ease;
+        }
+        .step:hover {
+            transform: translateX(5px);
+        }
+        .step-number {
+            display: inline-block;
+            background: #ffd700;
+            color: #333;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        .data-box {
+            display: inline-block;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        .clear-data {
+            background: rgba(76, 175, 80, 0.8);
+            border: 2px solid #4CAF50;
+        }
+        .encrypted-data {
+            background: rgba(244, 67, 54, 0.8);
+            border: 2px solid #f44336;
+            animation: pulse 2s infinite;
+        }
+        .result-data {
+            background: rgba(255, 193, 7, 0.8);
+            border: 2px solid #FFC107;
+            color: #333;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        .math-formula {
+            text-align: center;
+            font-size: 1.5em;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+        }
+        .key-box {
+            display: inline-block;
+            padding: 10px 15px;
+            background: rgba(156, 39, 176, 0.8);
+            border: 2px solid #9C27B0;
+            border-radius: 8px;
+            margin: 5px;
+            font-weight: bold;
+        }
+        .process-arrow {
+            text-align: center;
+            font-size: 2em;
+            margin: 10px 0;
+            color: #ffd700;
+        }
+        .demo-button {
+            background: #ffd700;
+            color: #333;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 20px auto;
+        }
+        .demo-button:hover {
+            background: #ffed4a;
+            transform: scale(1.05);
+        }
+        .result-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .precision-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .precision-box {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Fully Homomorphic Encryption Demo</h1>
+        <p style="text-align: center; font-size: 1.2em;">Tính tỷ lệ vàng trên dữ liệu mã hóa</p>
+
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>Tạo khóa mã hóa:</strong>
+            <div style="margin-top: 10px;">
+                <div class="key-box">🔑 Client Key (ckey)</div>
+                <div class="key-box">🔑 Server Key (skey)</div>
+            </div>
+            <p><em>Client key để mã hóa/giải mã, Server key để tính toán</em></p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>Dữ liệu ban đầu (rõ):</strong>
+            <div style="margin-top: 10px;">
+                <div class="data-box clear-data">1</div>
+                <div class="data-box clear-data">5</div>
+            </div>
+        </div>
+
+        <div class="process-arrow">⬇️ MÃ HÓA ⬇️</div>
+
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>Dữ liệu sau khi mã hóa:</strong>
+            <div style="margin-top: 10px;">
+                <div class="data-box encrypted-data">🔒 E(1)</div>
+                <div class="data-box encrypted-data">🔒 E(5)</div>
+            </div>
+            <p><em>Dữ liệu giờ đây hoàn toàn bị che giấu!</em></p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">4</span>
+            <strong>Tính toán trên dữ liệu mã hóa:</strong>
+            <div class="math-formula">φ = (1 + √5) / 2</div>
+            
+            <div style="margin: 15px 0;">
+                <p><strong>Bước 4a:</strong> Tính √5 trên dữ liệu mã hóa</p>
+                <div class="data-box encrypted-data">🔒 E(√5)</div> = sqrt(<div class="data-box encrypted-data">🔒 E(5)</div>)
+            </div>
+
+            <div style="margin: 15px 0;">
+                <p><strong>Bước 4b:</strong> Tính 1 + √5</p>
+                <div class="data-box encrypted-data">🔒 E(1+√5)</div> = <div class="data-box encrypted-data">🔒 E(1)</div> + <div class="data-box encrypted-data">🔒 E(√5)</div>
+            </div>
+
+            <div style="margin: 15px 0;">
+                <p><strong>Bước 4c:</strong> Chia cho 2</p>
+                <div class="data-box encrypted-data">🔒 E(φ)</div> = <div class="data-box encrypted-data">🔒 E(1+√5)</div> × <div class="data-box encrypted-data">🔒 E(1/2)</div>
+            </div>
+        </div>
+
+        <button class="demo-button" onclick="simulateCalculation()">🎯 Mô phỏng tính toán</button>
+
+        <div class="process-arrow">⬇️ GIẢI MÃ ⬇️</div>
+
+        <div class="step result-section">
+            <span class="step-number">5</span>
+            <strong>Kết quả cuối cùng:</strong>
+            
+            <div class="precision-demo">
+                <div class="precision-box">
+                    <h3>🎯 Chính xác cao (12 bit)</h3>
+                    <div class="data-box result-data" id="precise-result">1.6180</div>
+                    <p><small>U4F12: 4 bit nguyên + 12 bit thập phân</small></p>
+                </div>
+
+                <div class="precision-box">
+                    <h3>✂️ Cắt ngắn (4 bit)</h3>
+                    <div class="data-box result-data" id="truncated-result">1.6</div>
+                    <p><small>Chỉ giữ lại 4 bit thập phân quan trọng nhất</small></p>
+                </div>
+
+                <div class="precision-box">
+                    <h3>🔄 Làm tròn</h3>
+                    <div class="data-box result-data" id="rounded-result">2</div>
+                    <p><small>Làm tròn về số nguyên gần nhất</small></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="step" style="background: rgba(0,255,0,0.1); border-left-color: #00ff00;">
+            <span class="step-number">💡</span>
+            <strong>Điểm quan trọng:</strong>
+            <ul>
+                <li>Toàn bộ phép tính được thực hiện trên dữ liệu MÃ HÓA</li>
+                <li>Server không bao giờ biết giá trị thực của dữ liệu</li>
+                <li>Chỉ khi cần kết quả, chúng ta mới giải mã</li>
+                <li>Đây là cơ sở cho điện toán đám mây an toàn</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; font-size: 0.9em; opacity: 0.7;">
+            <p>Tỷ lệ vàng thực tế: φ ≈ 1.618033988749...</p>
+        </div>
+    </div>
+
+    <script>
+        function simulateCalculation() {
+            const button = document.querySelector('.demo-button');
+            button.innerHTML = '⚙️ Đang tính toán...';
+            button.style.background = '#ff6b35';
+            
+            // Animate encrypted data boxes
+            const encryptedBoxes = document.querySelectorAll('.encrypted-data');
+            encryptedBoxes.forEach(box => {
+                box.style.animation = 'pulse 0.5s infinite';
+            });
+
+            setTimeout(() => {
+                // Show results with animation
+                document.getElementById('precise-result').innerHTML = '1.6180';
+                document.getElementById('truncated-result').innerHTML = '1.6';
+                document.getElementById('rounded-result').innerHTML = '2';
+                
+                // Reset button
+                button.innerHTML = '✅ Tính toán hoàn thành!';
+                button.style.background = '#4CAF50';
+                
+                // Reset animation
+                encryptedBoxes.forEach(box => {
+                    box.style.animation = 'pulse 2s infinite';
+                });
+
+                setTimeout(() => {
+                    button.innerHTML = '🎯 Mô phỏng tính toán';
+                    button.style.background = '#ffd700';
+                }, 2000);
+            }, 3000);
+        }
+
+        // Add some interactive effects
+        document.querySelectorAll('.data-box').forEach(box => {
+            box.addEventListener('mouseover', function() {
+                this.style.transform = 'scale(1.1)';
+            });
+            
+            box.addEventListener('mouseout', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
